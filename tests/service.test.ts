@@ -1,36 +1,25 @@
-import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { ObjectId } from 'mongodb';
 import { Document as MongooseDocument } from 'mongoose';
 import { isEntityInstanceOf } from '../src/polymorphism';
-import { ortieCat, pogoCat, safiCat, silverCat } from './cat-module/cat-test-data';
-import { CatModule } from './cat-module/cat.module';
-import { CatsNestService } from './cat-module/cat.service';
-import { databaseModule, MongodInstance } from './database.module';
-import { HomeCat } from './home-cat-module/home-cat.entity';
-import { StrayCat } from './stray-cat-module/stray-cat.entity';
+import { CatModel, CatsService } from './cats/cat';
+import { HomeCat } from './cats/home-cat';
+import { StrayCat } from './cats/stray-cat';
+import { ortieCat, pogoCat, safiCat, silverCat } from './cats/test-data';
+import { createTestDatabase, MongodInstance } from './database';
 
 chai.use(chaiAsPromised);
 
 describe('CatsService', () => {
-  let app: INestApplication;
-  let moduleRef: TestingModule;
-  let catService: CatsNestService;
+  let catService: CatsService;
 
   before(async () => {
-    moduleRef = await Test.createTestingModule({
-      imports: [databaseModule, CatModule],
-    }).compile();
-    app = moduleRef.createNestApplication();
-    catService = moduleRef.get<CatsNestService>(CatsNestService);
-    await app.init();
-    await app.listen(1234);
+    await createTestDatabase();
+    catService = new CatsService(CatModel);
   });
   after(async () => {
     await MongodInstance.stop();
-    await app.close();
   });
   beforeEach(async function () {
     await catService.deleteMany();

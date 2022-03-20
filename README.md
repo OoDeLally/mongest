@@ -34,31 +34,29 @@ Now you can create your entity and your service:
 
 ```ts
 
-@Schema()
 export class Cat {
   _id!: ObjectId;
-
-  @Prop({ required: true, type: String })
+  kind!: CatKind;
   name!: string;
 }
 
-@Injectable()
-export class CatsService extends BuildMongestService(Cat) {}
+export const CatSchema = new Schema(
+  {
+    kind: { type: String, enum: CatKind },
+    name: String,
+  },
+  { discriminatorKey: 'kind' },
+);
 
-// or...
+export const CatModel = mongoose.model(Cat.name, CatSchema);
 
-@Injectable()
 export class CatsService extends BuildMongestService(Cat) {
-  constructor(@InjectModel(Cat.name) public model: Model<Cat>) {
-    // If you ever need to override the constructor (e.g. to add additional dependencies),
-    // dont forget to explicitely inject the model to super().
-    super(model);
-  }
   async myCustomMethod(): Promise<Cat[]> {
     return await this.find({ name: 'pogo' });
   }
 }
 
+const catService = new CatsService(CatModel);
 ```
 
 
@@ -115,26 +113,53 @@ export enum CatKind {
   HomeCat = 'HomeCat',
 }
 
-@Schema({ discriminatorKey: 'kind' })
+// Base Cat
 export class Cat {
+  _id!: ObjectId;
   kind!: CatKind;
-
-  @Prop({ required: true, type: String })
   name!: string;
 }
+export const CatSchema = new Schema(
+  {
+    kind: { type: String, enum: CatKind },
+    name: String,
+  },
+  { discriminatorKey: 'kind' },
+);
+export const CatModel = mongoose.model(Cat.name, CatSchema);
+export class CatsService extends BuildMongestService(Cat) {}
 
-@Schema()
-export class StrayCat extends Cat {
-  @Prop({ required: true, type: Number })
-  territorySize!: number;
-}
-
-@Schema()
+// Home Cat
 export class HomeCat extends Cat {
-  @Prop({ required: true, type: String })
   humanSlave!: string;
 }
+export const HomeCatSchema = new Schema(
+  {
+    humanSlave: String,
+  },
+  { discriminatorKey: 'kind' },
+);
+registerEntityClassForSchema(HomeCat, HomeCatSchema);
+export const HomeCatModel = CatModel.discriminator(HomeCat.name, HomeCatSchema);
+export class HomeCatsService extends BuildMongestService(HomeCat) {}
 
+// Stray Cat
+export class StrayCat extends Cat {
+  territorySize!: number;
+  enemyCount?: number;
+}
+export const StrayCatSchema = new Schema(
+  {
+    territorySize: Number,
+    enemyCount: { type: Number, required: false },
+  },
+  { discriminatorKey: 'kind' },
+);
+registerEntityClassForSchema(StrayCat, StrayCatSchema);
+export const StrayCatModel = CatModel.discriminator(StrayCat.name, StrayCatSchema);
+export class StrayCatsService extends BuildMongestService(StrayCat) {}
+
+// Usage
 const strayCat: StrayCat = { name: 'Billy', kind: 'StrayCat', territorySize: 45 }
 const homeCat: HomeCat = { name: 'Pogo', kind: 'HomeCat', humanSlave: 'Pascal' }
 await catService.insertMany([strayCat, homeCat])

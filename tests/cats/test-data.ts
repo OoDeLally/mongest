@@ -1,8 +1,8 @@
 import { ObjectId } from 'mongodb';
-import { HomeCat } from 'tests/home-cat-module/home-cat.entity';
 import { OmitId } from '../../src/types';
-import { StrayCat } from '../stray-cat-module/stray-cat.entity';
-import { CatKind } from './cat.entity';
+import { CatKind } from './cat';
+import { HomeCat } from './home-cat';
+import { StrayCat } from './stray-cat';
 
 export const pogoCat: OmitId<StrayCat> = {
   kind: CatKind.StrayCat,

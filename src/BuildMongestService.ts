@@ -3,6 +3,7 @@
 import { MongoProjection } from 'mongest-projection';
 import { UpdateResult } from 'mongodb';
 import { FilterQuery, Model, PipelineStage, UpdateQuery } from 'mongoose';
+import { includeKeyInProjection } from './helpers/projection';
 import {
   CountDocumentsOptions,
   DeleteManyOptions,
@@ -136,6 +137,10 @@ export function BuildMongestService<EDoc extends EntityPayload>(
       const doc = await this.model
         .findOneAndUpdate(filter, payload as UpdateQuery<E>, {
           ...options,
+          projection:
+            this.discriminatorKey && options?.projection
+              ? includeKeyInProjection(this.discriminatorKey, options.projection) // Workaround for https://github.com/Automattic/mongoose/issues/11546
+              : undefined,
           overwriteDiscriminatorKey: true,
         })
         .lean()
