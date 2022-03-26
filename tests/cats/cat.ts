@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb';
 import mongoose, { Schema } from 'mongoose';
 import { BuildMongestService } from 'src/BuildMongestService';
+import { Item } from './item';
 
 export enum CatKind {
   StrayCat = 'StrayCat',
@@ -23,13 +24,14 @@ export const CatSchema = new Schema(
     age: Number,
     stripeColor: { type: String, required: false },
     color: { type: String, required: false, default: 'black' },
+    scratchingItemsId: [{ type: Schema.Types.ObjectId, ref: Item.name }],
   },
   { discriminatorKey: 'kind' },
 );
 
 export const CatModel = mongoose.model(Cat.name, CatSchema);
 
-export class CatsService extends BuildMongestService(Cat) {
+export class CatsService extends BuildMongestService(Cat, CatSchema) {
   async findByName(name: string): Promise<Cat | null> {
     const doc = await this.findOne({ name });
     return doc;

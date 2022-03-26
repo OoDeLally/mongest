@@ -25,6 +25,7 @@ export type FindOneOptions<T extends EntityPayload, P extends MongoProjection | 
   skip?: number;
   sort?: SortObject<T>;
   projection?: P;
+  populate?: any;
 };
 
 export type FindOneAndDeleteOptions<

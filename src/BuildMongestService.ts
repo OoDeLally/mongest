@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { MongoProjection } from 'mongest-projection';
 import { UpdateResult } from 'mongodb';
-import { FilterQuery, Model, PipelineStage, UpdateQuery } from 'mongoose';
+import { FilterQuery, Model, PipelineStage, Schema, UpdateQuery } from 'mongoose';
 import { includeKeyInProjection } from './helpers/projection';
 import {
   CountDocumentsOptions,
@@ -21,7 +21,10 @@ import {
   UpdateOneOptions,
 } from './MongestService';
 import { paginateQuery } from './pagination';
-import { getEntityClassForSchema } from './registerEntityClassForSchema';
+import {
+  getEntityClassForSchema,
+  registerEntityClassForSchema,
+} from './registerEntityClassForSchema';
 import {
   AbstractType,
   EntityPayload,
@@ -31,11 +34,14 @@ import {
   Type,
 } from './types';
 
-export function BuildMongestService<EDoc extends EntityPayload>(
+export function BuildMongestService<EDoc extends EntityPayload, ESchema extends Schema>(
   EntityClass: Type<EDoc>,
+  mongooseSchema: ESchema,
 ): AbstractType<MongestService<EDoc>> {
   type E = OmitId<EDoc>;
   type IdType = ExtractIdType<EDoc>;
+
+  registerEntityClassForSchema(EntityClass, mongooseSchema);
 
   abstract class BaseServiceHost implements MongestService<EDoc> {
     protected readonly discriminatorKey: string | null;

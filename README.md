@@ -128,7 +128,7 @@ export const CatSchema = new Schema(
   { discriminatorKey: 'kind' },
 );
 export const CatModel = mongoose.model(Cat.name, CatSchema);
-export class CatsService extends BuildMongestService(Cat) {}
+export class CatsService extends BuildMongestService(Cat, CatSchema) {}
 
 // Home Cat
 export class HomeCat extends Cat {
@@ -140,9 +140,8 @@ export const HomeCatSchema = new Schema(
   },
   { discriminatorKey: 'kind' },
 );
-registerEntityClassForSchema(HomeCat, HomeCatSchema);
 export const HomeCatModel = CatModel.discriminator(HomeCat.name, HomeCatSchema);
-export class HomeCatsService extends BuildMongestService(HomeCat) {}
+export class HomeCatsService extends BuildMongestService(HomeCat, HomeCatSchema) {}
 
 // Stray Cat
 export class StrayCat extends Cat {
@@ -156,9 +155,8 @@ export const StrayCatSchema = new Schema(
   },
   { discriminatorKey: 'kind' },
 );
-registerEntityClassForSchema(StrayCat, StrayCatSchema);
 export const StrayCatModel = CatModel.discriminator(StrayCat.name, StrayCatSchema);
-export class StrayCatsService extends BuildMongestService(StrayCat) {}
+export class StrayCatsService extends BuildMongestService(StrayCat, StrayCatSchema) {}
 
 // Usage
 const strayCat: StrayCat = { name: 'Billy', kind: 'StrayCat', territorySize: 45 }

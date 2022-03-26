@@ -1,7 +1,6 @@
 import { Schema } from 'mongoose';
 import { BuildMongestService } from 'src/BuildMongestService';
-import { registerEntityClassForSchema } from '../../src/registerEntityClassForSchema';
-import { Cat, CatModel } from './cat';
+import { Cat, CatKind, CatModel } from './cat';
 
 export class HomeCat extends Cat {
   humanSlave!: string;
@@ -14,8 +13,6 @@ export const HomeCatSchema = new Schema(
   { discriminatorKey: 'kind' },
 );
 
-registerEntityClassForSchema(HomeCat, HomeCatSchema);
+export const HomeCatModel = CatModel.discriminator(CatKind.HomeCat, HomeCatSchema);
 
-export const HomeCatModel = CatModel.discriminator(HomeCat.name, HomeCatSchema);
-
-export class HomeCatsService extends BuildMongestService(HomeCat) {}
+export class HomeCatsService extends BuildMongestService(HomeCat, HomeCatSchema) {}
