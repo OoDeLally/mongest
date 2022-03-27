@@ -1,8 +1,7 @@
 import { MongoProjection, Projected } from 'mongest-projection';
 import { UpdateResult } from 'mongodb';
-import { FilterQuery, Model, PipelineStage, Schema, UpdateQuery } from 'mongoose';
+import { FilterQuery, Model, PipelineStage, UpdateQuery } from 'mongoose';
 import { SortObject } from './pagination';
-import { PopulateKey } from './populate';
 import { EntityPayload, ExtractIdType, OmitId } from './types';
 
 export type CountDocumentsOptions = {
@@ -22,15 +21,10 @@ export type DocOrProjectedDoc<
   P extends MongoProjection | undefined,
 > = P extends MongoProjection ? Projected<EntityDoc, P> : EntityDoc;
 
-export type FindOneOptions<
-  T extends EntityPayload,
-  ESchema extends Schema,
-  P extends MongoProjection | undefined,
-> = {
+export type FindOneOptions<T extends EntityPayload, P extends MongoProjection | undefined> = {
   skip?: number;
   sort?: SortObject<T>;
   projection?: P;
-  populate?: PopulateKey<ESchema>[];
 };
 
 export type FindOneAndDeleteOptions<
@@ -80,7 +74,7 @@ export type FindByIdAndUpdateOptions<P extends MongoProjection | undefined> = {
 
 export type DeleteResult = { deletedCount: number };
 
-export interface MongestService<EDoc extends EntityPayload, ESchema extends Schema> {
+export interface MongestService<EDoc extends EntityPayload> {
   model: Model<EDoc>;
 
   aggregate<ResultDoc extends object | unknown = unknown>(
@@ -102,7 +96,7 @@ export interface MongestService<EDoc extends EntityPayload, ESchema extends Sche
 
   findOne<P extends MongoProjection | undefined = undefined>(
     filter?: FilterQuery<EDoc>,
-    options?: FindOneOptions<EDoc, ESchema, P>,
+    options?: FindOneOptions<EDoc, P>,
   ): Promise<DocOrProjectedDoc<EDoc, P> | null>;
 
   findOneAndUpdate<P extends MongoProjection | undefined = undefined>(

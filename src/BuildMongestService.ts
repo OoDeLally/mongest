@@ -37,13 +37,13 @@ import {
 export function BuildMongestService<EDoc extends EntityPayload, ESchema extends Schema>(
   EntityClass: Type<EDoc>,
   mongooseSchema: ESchema,
-): AbstractType<MongestService<EDoc, ESchema>> {
+): AbstractType<MongestService<EDoc>> {
   type E = OmitId<EDoc>;
   type IdType = ExtractIdType<EDoc>;
 
   registerEntityClassForSchema(EntityClass, mongooseSchema);
 
-  abstract class BaseServiceHost implements MongestService<EDoc, ESchema> {
+  abstract class BaseServiceHost implements MongestService<EDoc> {
     protected readonly discriminatorKey: string | null;
 
     constructor(public model: Model<EDoc>) {
@@ -103,7 +103,7 @@ export function BuildMongestService<EDoc extends EntityPayload, ESchema extends 
 
     async findOne<P extends MongoProjection | undefined = undefined>(
       filter?: FilterQuery<EDoc>,
-      options?: FindOneOptions<E, ESchema, P>,
+      options?: FindOneOptions<E, P>,
     ): Promise<DocOrProjectedDoc<EDoc, P> | null> {
       const query = this.model.findOne(filter || {}, options?.projection);
       const doc = await paginateQuery<any, any>(query, options).lean().exec();
