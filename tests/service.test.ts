@@ -1,7 +1,7 @@
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { ObjectId } from 'mongodb';
-import { Document as MongooseDocument } from 'mongoose';
+import mongoose from 'mongoose';
 import { isEntityInstanceOf } from '../src/polymorphism';
 import { CatModel, CatsService } from './cats/cat';
 import { HomeCat } from './cats/home-cat';
@@ -19,6 +19,7 @@ describe('CatsService', () => {
     catService = new CatsService(CatModel);
   });
   after(async () => {
+    await mongoose.disconnect();
     await MongodInstance.stop();
   });
   beforeEach(async function () {
@@ -29,11 +30,11 @@ describe('CatsService', () => {
     await catService.insert(ortieCat);
     await catService.insert(silverCat);
     const cats = await catService.find({}, { sort: { name: 1 } });
-    // expect(cats[0]).not.be.instanceOf(MongooseDocument);
+    // expect(cats[0]).not.be.instanceOf(mongoose.Document);
     // expect(cats[0]).to.be.instanceOf(Cat);
     expect(cats[0]).to.be.instanceOf(StrayCat);
     expect(cats[0]).to.contain(ortieCat);
-    // expect(cats[1]).not.be.instanceOf(MongooseDocument);
+    // expect(cats[1]).not.be.instanceOf(mongoose.Document);
     // expect(cats[1]).to.be.instanceOf(Cat);
     expect(cats[1]).to.be.instanceOf(HomeCat);
     expect(cats[1]).to.contain(silverCat);
@@ -42,7 +43,7 @@ describe('CatsService', () => {
   it('should insertMany cats', async function () {
     const insertedCats = await catService.insertMany([pogoCat, safiCat, ortieCat]);
     expect(insertedCats).to.be.of.length(3);
-    expect(insertedCats[0]).not.be.instanceOf(MongooseDocument);
+    expect(insertedCats[0]).not.be.instanceOf(mongoose.Document);
     expect(insertedCats[0]).to.be.instanceOf(StrayCat);
   });
 
@@ -69,7 +70,7 @@ describe('CatsService', () => {
     );
     expect(projectedCats).to.be.of.length(2);
     const firstCat = projectedCats[0]!;
-    expect(firstCat).not.be.instanceOf(MongooseDocument);
+    expect(firstCat).not.be.instanceOf(mongoose.Document);
     expect(firstCat).to.be.instanceOf(StrayCat);
     if (isEntityInstanceOf(firstCat, StrayCat)) {
       expect(firstCat.territorySize).equal(pogoCat.territorySize);
@@ -103,7 +104,7 @@ describe('CatsService', () => {
     );
     expect(fullCats).to.be.of.length(2);
     const firstCat = fullCats[0]!;
-    expect(firstCat).not.be.instanceOf(MongooseDocument);
+    expect(firstCat).not.be.instanceOf(mongoose.Document);
     expect(firstCat).to.be.instanceOf(StrayCat);
     if (isEntityInstanceOf(firstCat, StrayCat)) {
       expect(firstCat.territorySize).equal(pogoCat.territorySize);
@@ -136,7 +137,7 @@ describe('CatsService', () => {
     );
     expect(cat).to.be.an('object');
     expect(cat).to.be.instanceOf(StrayCat);
-    expect(cat).not.be.instanceOf(MongooseDocument);
+    expect(cat).not.be.instanceOf(mongoose.Document);
     expect(cat?.name).to.equal(pogoCat.name);
   });
 
@@ -147,7 +148,7 @@ describe('CatsService', () => {
     expect(_id).to.be.an('object');
     const cat = await catService.findById(_id);
     expect(cat).to.be.an('object');
-    expect(cat).not.be.instanceOf(MongooseDocument);
+    expect(cat).not.be.instanceOf(mongoose.Document);
     expect(cat).to.be.instanceOf(StrayCat);
     expect(cat?._id.toHexString()).to.equal(_id.toHexString());
     expect(cat?.name).to.equal(safiCat.name);
@@ -162,7 +163,7 @@ describe('CatsService', () => {
     expect(_id).to.be.an('object');
     const cat = await catService.findByIdOrThrow(_id);
     expect(cat).to.be.an('object');
-    expect(cat).not.be.instanceOf(MongooseDocument);
+    expect(cat).not.be.instanceOf(mongoose.Document);
     expect(cat).to.be.instanceOf(StrayCat);
     expect(cat._id.toHexString()).to.equal(_id.toHexString());
     expect(cat.name).to.equal(safiCat.name);
@@ -213,7 +214,7 @@ describe('CatsService', () => {
       { name: pogoNewName1 },
       { projection: { name: 1 } },
     );
-    expect(oldDoc).not.be.instanceOf(MongooseDocument);
+    expect(oldDoc).not.be.instanceOf(mongoose.Document);
     expect(oldDoc).to.be.instanceOf(StrayCat);
     expect(oldDoc?.name).to.equal(pogoCat.name);
 
@@ -224,7 +225,7 @@ describe('CatsService', () => {
       { name: pogoNewName2 },
       { projection: { name: 1 }, new: true },
     );
-    expect(newDoc).not.be.instanceOf(MongooseDocument);
+    expect(newDoc).not.be.instanceOf(mongoose.Document);
     expect(newDoc).to.be.instanceOf(StrayCat);
     expect(newDoc?.name).to.equal(pogoNewName2);
 
@@ -240,7 +241,7 @@ describe('CatsService', () => {
       upsert: true,
       new: true,
     });
-    expect(newSilverDoc).not.be.instanceOf(MongooseDocument);
+    expect(newSilverDoc).not.be.instanceOf(mongoose.Document);
     expect(newSilverDoc).to.be.instanceOf(HomeCat);
     expect(
       newSilverDoc.name, // SHOULD NOT need `?.` because the typing SHOULD guarantees that newSafiDoc cannot be null.
@@ -255,7 +256,7 @@ describe('CatsService', () => {
       },
       { new: true },
     );
-    expect(updatedDoc).not.be.instanceOf(MongooseDocument);
+    expect(updatedDoc).not.be.instanceOf(mongoose.Document);
     expect(updatedDoc).to.be.instanceOf(HomeCat);
     expect(updatedDoc?.name).to.equal(newSilverName);
   });
@@ -263,7 +264,7 @@ describe('CatsService', () => {
   it('should findOneAndReplace cat with doc exists', async function () {
     await catService.insertMany([pogoCat, safiCat, ortieCat]);
     const oldOrtieDoc = await catService.findOneAndReplace({ name: ortieCat.name }, safiCat);
-    expect(oldOrtieDoc).not.be.instanceOf(MongooseDocument);
+    expect(oldOrtieDoc).not.be.instanceOf(mongoose.Document);
     expect(oldOrtieDoc).to.be.instanceOf(StrayCat);
     expect(oldOrtieDoc?.name).to.equal(ortieCat.name);
   });
@@ -280,7 +281,7 @@ describe('CatsService', () => {
     const newPogoDoc = await catService.findOneAndReplace({ name: pogoCat.name }, safiCat, {
       new: true,
     });
-    expect(newPogoDoc).not.be.instanceOf(MongooseDocument);
+    expect(newPogoDoc).not.be.instanceOf(mongoose.Document);
     expect(newPogoDoc).to.be.instanceOf(StrayCat);
     expect(newPogoDoc?.name).to.equal(safiCat.name);
   });
@@ -299,7 +300,7 @@ describe('CatsService', () => {
       new: true,
       upsert: true,
     });
-    expect(newPogoDoc).not.be.instanceOf(MongooseDocument);
+    expect(newPogoDoc).not.be.instanceOf(mongoose.Document);
     expect(newPogoDoc).to.be.instanceOf(StrayCat);
     expect(newPogoDoc.name).to.equal(safiCat.name);
   });
@@ -310,7 +311,7 @@ describe('CatsService', () => {
       new: true,
       upsert: true,
     });
-    expect(newPogoDoc).not.be.instanceOf(MongooseDocument);
+    expect(newPogoDoc).not.be.instanceOf(mongoose.Document);
     expect(newPogoDoc).to.be.instanceOf(StrayCat);
     expect(newPogoDoc.name).to.equal(safiCat.name);
   });
@@ -322,7 +323,7 @@ describe('CatsService', () => {
       upsert: true,
     });
     oldPogoDoc?.name; // Type assertion
-    expect(oldPogoDoc).not.be.instanceOf(MongooseDocument);
+    expect(oldPogoDoc).not.be.instanceOf(mongoose.Document);
     expect(oldPogoDoc).to.be.instanceOf(StrayCat);
     expect(oldPogoDoc?.name).to.equal(pogoCat.name);
   });
@@ -361,7 +362,7 @@ describe('CatsService', () => {
   it('should findByIdAndDelete cat', async function () {
     const pogoDoc = await catService.insert(pogoCat);
     const deletedPogoDoc = await catService.findByIdAndDelete(pogoDoc._id);
-    expect(deletedPogoDoc).not.be.instanceOf(MongooseDocument);
+    expect(deletedPogoDoc).not.be.instanceOf(mongoose.Document);
     expect(deletedPogoDoc).to.be.instanceOf(StrayCat);
     expect(deletedPogoDoc).to.be.eql(pogoDoc);
     const count = await catService.countDocuments();
@@ -373,7 +374,7 @@ describe('CatsService', () => {
   it('should findOneAndDelete cat', async function () {
     const pogoDoc = await catService.insert(pogoCat);
     const deletedPogoDoc = await catService.findOneAndDelete({ _id: pogoDoc._id });
-    expect(deletedPogoDoc).not.be.instanceOf(MongooseDocument);
+    expect(deletedPogoDoc).not.be.instanceOf(mongoose.Document);
     expect(deletedPogoDoc).to.be.instanceOf(StrayCat);
     expect(deletedPogoDoc).to.be.eql(pogoDoc);
   });
