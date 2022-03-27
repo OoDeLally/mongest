@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import mongoose, { Schema } from 'mongoose';
 import { BuildMongestService } from 'src/BuildMongestService';
-import { Item } from './item';
+import { ItemModel } from './item';
 
 export enum CatKind {
   StrayCat = 'StrayCat',
@@ -24,7 +24,9 @@ export const CatSchema = new Schema(
     age: Number,
     stripeColor: { type: String, required: false },
     color: { type: String, required: false, default: 'black' },
-    scratchingItemsId: [{ type: Schema.Types.ObjectId, ref: Item.name }],
+    toys: [{ type: Schema.Types.ObjectId, ref: ItemModel }], // non-id field name format
+    scratchingItemsId: [{ type: Schema.Types.ObjectId, ref: ItemModel }], // "fieldId" name format
+    favoriteToy: { type: Schema.Types.ObjectId, ref: ItemModel },
   },
   { discriminatorKey: 'kind' },
 );
