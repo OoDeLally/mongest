@@ -4,7 +4,7 @@
 
 This is a BETA, and therefore you may encounter bugs. Please [post an issue](https://github.com/OoDeLally/mongest/issues) if needed.
 
-Note: If you use NestJS, use
+Note: If you use NestJS, use [mongest-nestjs-service](https://github.com/OoDeLally/mongest-nestjs-service).
 
 Note: If you happen to use GraphQL and optionally [ReactAdmin](https://github.com/marmelab/react-admin), use also [ra-data-graphql-simple-mongest-resolver](https://github.com/OoDeLally/ra-data-graphql-simple-mongest-resolver), which includes automatic resolver boilerplates.
 
